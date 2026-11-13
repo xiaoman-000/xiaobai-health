@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2F6B55">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>小白 · 健康陪伴助手</title>
+<style>
+  :root{
+    --green:#2F6B55;
+    --green-dark:#1F4E3D;
+    --green-soft:#E6F0EA;
+    --cream:#FBF9F4;
+    --paper:#EFEAE0;
+    --ink:#23302A;
+    --muted:#7C8781;
+    --line:#E4DDCF;
+    --amber:#A9741F;
+    --red:#B2473A;
+    --red-soft:#FFF4F1;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB",system-ui,-apple-system,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 600px at 10% -10%, #E7EFE8 0%, transparent 60%),
+      radial-gradient(900px 500px at 100% 110%, #F1E3CF 0%, transparent 55%),
+      var(--paper);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .app{
+    width:min(1160px,100%);
+    height:min(880px, calc(100vh - 48px));
+    display:grid;
+    grid-template-columns:330px 1fr;
+    background:var(--cream);
+    border-radius:26px;
+    overflow:hidden;
+    box-shadow:0 30px 80px rgba(43,55,48,.18), 0 4px 14px rgba(43,55,48,.08);
+    border:1px solid rgba(255,255,255,.7);
+  }
+
+  /* ---------- sidebar ---------- */
+  .side{
+    background:linear-gradient(165deg, #356F59 0%, #265544 55%, #1D4536 100%);
+    color:#F4F8F5;
+    padding:30px 26px 24px;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    overflow:hidden;
+  }
+  .side::after{
+    content:"";
+    position:absolute;
+    width:260px;height:260px;
+    right:-120px;bottom:-110px;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(240,195,107,.22), transparent 68%);
+  }
+  .brand{display:flex;align-items:center;gap:13px;margin-bottom:20px;position:relative;z-index:1}
+  .avatar{
+    width:50px;height:50px;border-radius:16px;
+    background:linear-gradient(150deg,#F2CE86,#E5B65E);
+    color:#4A3A16;
+    display:grid;place-items:center;
+    font-size:22px;font-weight:800;
+    box-shadow:0 6px 16px rgba(0,0,0,.18);
+    flex:none;
+  }
+  .brand h1{margin:0;font-size:22px;letter-spacing:.5px}
+  .brand p{margin:3px 0 0;font-size:12px;color:rgba(244,248,245,.7);letter-spacing:1.2px}
+  .intro{
+    font-size:13.5px;line-height:1.75;color:rgba(244,248,245,.86);
+    margin:0 0 22px;position:relative;z-index:1;
+  }
+  .cap{display:flex;flex-direction:column;gap:11px;position:relative;z-index:1}
+  .cap-item{display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(244,248,245,.92)}
+  .cap-item .dot{
+    width:7px;height:7px;border-radius:50%;background:#F0C36B;flex:none;
+    box-shadow:0 0 0 4px rgba(240,195,107,.13);
+  }
+  .safety{
+    margin-top:auto;position:relative;z-index:1;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.13);
+    border-radius:14px;
+    padding:13px 14px;
+  }
+  .safety-title{font-size:11px;letter-spacing:1.5px;color:#F0C36B;margin-bottom:6px}
+  .safety p{margin:0;font-size:12px;line-height:1.7;color:rgba(244,248,245,.82)}
+  .side-foot{
+    margin-top:14px;font-size:11px;color:rgba(244,248,245,.5);position:relative;z-index:1;
+  }
+
+  /* ---------- chat ---------- */
+  .chat{display:flex;flex-direction:column;min-width:0;background:var(--cream)}
+  .chat-head{
+    height:66px;flex:none;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 24px;
+    border-bottom:1px solid var(--line);
+    background:rgba(251,249,244,.9);
+    backdrop-filter:blur(6px);
+  }
+  .head-left{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--muted)}
+  .status{
+    width:8px;height:8px;border-radius:50%;background:#3E9A6E;flex:none;
+    box-shadow:0 0 0 4px rgba(62,154,110,.15);
+    animation:pulse 2.4s infinite;
+  }
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(62,154,110,.15)}50%{box-shadow:0 0 0 7px rgba(62,154,110,.06)}}
+  .head-left .sep{color:#C9C2B4}
+  .ghost{
+    border:1px solid var(--line);background:transparent;color:var(--muted);
+    font:inherit;font-size:12px;padding:7px 12px;border-radius:9px;cursor:pointer;
+    transition:.2s;
+  }
+  .ghost:hover{background:#F2EDE1;color:var(--ink)}
+
+  .messages{
+    flex:1;overflow-y:auto;padding:26px 26px 10px;
+    display:flex;flex-direction:column;gap:18px;
+    scroll-behavior:smooth;
+  }
+  .messages::-webkit-scrollbar{width:6px}
+  .messages::-webkit-scrollbar-thumb{background:#DCD4C4;border-radius:3px}
+
+  .welcome{
+    max-width:620px;margin:8px 0 4px;
+    animation:fadeUp .5s ease both;
+  }
+  .welcome h2{
+    font-size:24px;margin:0 0 8px;color:var(--green-dark);letter-spacing:.3px;
+  }
+  .welcome p{margin:0 0 18px;font-size:14px;line-height:1.7;color:var(--muted)}
+  .examples{display:flex;flex-wrap:wrap;gap:9px}
+  .examples button{
+    font:inherit;font-size:13px;color:var(--green-dark);
+    background:#fff;border:1px solid var(--line);
+    padding:9px 14px;border-radius:11px;cursor:pointer;
+    transition:.2s;
+    box-shadow:0 1px 2px rgba(43,55,48,.04);
+  }
+  .examples button:hover{border-color:#B9CFC2;background:var(--green-soft);transform:translateY(-1px)}
+
+  .row{display:flex;gap:10px;align-items:flex-start;animation:fadeUp .35s ease both}
+  .row.user{justify-content:flex-end}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+
+  .avatar-sm{
+    width:30px;height:30px;border-radius:10px;flex:none;
+    background:#E4D3A8;color:#5A4518;
+    display:grid;place-items:center;
+    font-size:13px;font-weight:800;
+    margin-top:2px;
+  }
+  .bot-wrap{max-width:min(640px,82%);display:flex;flex-direction:column;gap:9px}
+  .bubble{
+    padding:14px 17px;border-radius:16px;font-size:14.5px;line-height:1.8;
+    box-shadow:0 1px 3px rgba(43,55,48,.05);
+  }
+  .bot-bubble{
+    background:#fff;border:1px solid #EEE8DA;border-top-left-radius:6px;
+  }
+  .bot-bubble.emergency{
+    background:var(--red-soft);
+    border:1px solid #F0C9C2;
+    border-left:4px solid var(--red);
+    border-top-left-radius:6px;
+  }
+  .emg-tag{
+    display:inline-block;font-size:11px;letter-spacing:1px;
+    color:#fff;background:var(--red);
+    border-radius:5px;padding:3px 8px;margin-bottom:9px;
+  }
+  .bubble p{margin:0 0 8px}
+  .bubble p:last-child{margin-bottom:0}
+  .bubble p.label{margin:13px 0 6px;font-weight:650;color:#2F6B55}
+  .bubble p.label:first-child{margin-top:0}
+  .bullet{
+    position:relative;padding-left:14px;margin:3px 0;color:#33413A;
+  }
+  .bullet::before{
+    content:"";position:absolute;left:1px;top:11px;
+    width:5px;height:5px;border-radius:50%;background:#8FB3A2;
+  }
+  .user-bubble{
+    background:var(--green);color:#fff;
+    border-bottom-right-radius:6px;
+    max-width:min(560px,78%);
+    box-shadow:0 4px 14px rgba(47,107,85,.18);
+  }
+  .call{
+    display:inline-block;margin-top:10px;
+    background:var(--red);color:#fff;text-decoration:none;
+    font-size:13px;font-weight:700;letter-spacing:.5px;
+    padding:9px 15px;border-radius:9px;
+  }
+  .call:hover{background:#9C3B30}
+
+  .meta{
+    display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+    margin-top:11px;padding-top:9px;border-top:1px dashed #EDE7D9;
+    font-size:11px;color:var(--muted);
+  }
+  .risk{padding:2px 7px;border-radius:5px;font-weight:700;letter-spacing:.3px}
+  .risk.low{color:#2C6B4C;background:#E8F3EC}
+  .risk.mid{color:#8A5B12;background:#FBF0D9}
+  .risk.high{color:#9E3B2F;background:#FBE7E2}
+  .ev{line-height:1.5}
+
+  .followups{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{
+    font:inherit;font-size:12.5px;color:var(--green-dark);
+    background:#fff;border:1px solid var(--line);
+    border-radius:999px;padding:7px 13px;cursor:pointer;transition:.2s;
+  }
+  .chip:hover{background:var(--green-soft);border-color:#BCD2C6}
+
+  .tools{display:flex;gap:6px}
+  .tool{
+    width:28px;height:28px;border-radius:8px;
+    border:1px solid var(--line);background:#fff;
+    display:grid;place-items:center;cursor:pointer;color:#7C8781;
+    transition:.2s;
+  }
+  .tool:hover{color:var(--green);border-color:#BCD2C6;background:var(--green-soft)}
+  .tool.speaking{color:var(--green);background:var(--green-soft);border-color:#BCD2C6}
+  .tool svg{width:15px;height:15px}
+
+  .typing{display:flex;gap:5px;align-items:center;padding:16px 17px}
+  .typing span{
+    width:6px;height:6px;border-radius:50%;background:#B9C7BF;
+    animation:bounce 1.2s infinite;
+  }
+  .typing span:nth-child(2){animation-delay:.15s}
+  .typing span:nth-child(3){animation-delay:.3s}
+  @keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-5px);opacity:1}}
+
+  .composer{
+    flex:none;display:flex;align-items:flex-end;gap:10px;
+    padding:14px 22px 8px;
+    border-top:1px solid var(--line);
+    background:var(--cream);
+  }
+  textarea{
+    flex:1;resize:none;overflow-y:hidden;border:1px solid var(--line);background:#fff;
+    border-radius:14px;padding:12px 15px;
+    font:inherit;font-size:14.5px;line-height:1.6;color:var(--ink);
+    outline:none;max-height:120px;min-height:46px;
+    transition:border-color .2s, box-shadow .2s;
+  }
+  textarea:focus{border-color:#9DBBA9;box-shadow:0 0 0 4px rgba(47,107,85,.08)}
+  textarea::placeholder{color:#A9B1AC}
+  .send{
+    width:46px;height:46px;border-radius:14px;border:none;flex:none;
+    background:var(--green);color:#fff;font-size:20px;cursor:pointer;
+    display:grid;place-items:center;
+    transition:.2s;
+    box-shadow:0 6px 16px rgba(47,107,85,.25);
+  }
+  .send:hover:not(:disabled){background:var(--green-dark);transform:translateY(-1px)}
+  .send:disabled{background:#C9D3CD;box-shadow:none;cursor:not-allowed}
+  .disclaimer{
+    flex:none;text-align:center;font-size:11px;color:#9AA39D;
+    padding:2px 12px 12px;background:var(--cream);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001s !important;animation-iteration-count:1 !important;transition:none !important}
+  }
+
+  @media (max-width:860px){
+    body{padding:0;align-items:stretch}
+    .app{
+      grid-template-columns:1fr;
+      grid-template-rows:auto 1fr;
+      height:100vh;height:100dvh;border-radius:0;border:none;
+      box-shadow:none;
+    }
+    .side{padding:16px 18px;flex-direction:row;align-items:center;gap:12px}
+    .brand{margin:0}
+    .avatar{width:40px;height:40px;border-radius:13px;font-size:18px}
+    .brand h1{font-size:18px}
+    .brand p{font-size:10px}
+    .intro,.cap,.safety,.side-foot{display:none}
+    .chat{min-height:0}
+    .chat-head{padding:0 14px}
+    .head-left{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .messages{padding:18px 16px 8px}
+    .bot-wrap{max-width:86%}
+    .welcome h2{font-size:21px}
+    .composer{padding:10px 14px 6px}
+    .disclaimer{padding-bottom:calc(10px + env(safe-area-inset-bottom))}
+  }
+
+  @media (max-width:560px){
+    .head-left span:nth-child(n+3){display:none}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      <div class="avatar">小</div>
+      <div>
+        <h1>小白</h1>
+        <p>健康陪伴助手</p>
+      </div>
+    </div>
+    <p class="intro">哪里不舒服、要不要去医院、在家能先做什么、哪些事千万别做，都可以问我。</p>
+    <div class="cap">
+      <div class="cap-item"><span class="dot"></span>9 类危险信号识别</div>
+      <div class="cap-item"><span class="dot"></span>该不该就医的分级判断</div>
+      <div class="cap-item"><span class="dot"></span>居家能先做什么、别做什么</div>
+      <div class="cap-item"><span class="dot"></span>常见症状的科普与安抚</div>
+    </div>
+    <div class="safety">
+      <div class="safety-title">安全边界</div>
+      <p>不做诊断，不开药，不替代面诊。遇到急症，第一句就告诉你打 120。</p>
+    </div>
+    <div class="side-foot">知识库：K1 急救 9 篇 · K2 常见症状 11 篇</div>
+  </aside>
+
+  <main class="chat">
+    <header class="chat-head">
+      <div class="head-left">
+        <span class="status"></span>
+        <span>在线</span>
+        <span class="sep">·</span>
+        <span>只做健康科普与方向判断</span>
+        <span class="sep">·</span>
+        <span>数据只在本机</span>
+      </div>
+      <button class="ghost" id="reset" type="button">重新开始</button>
+    </header>
+
+    <div class="messages" id="messages" aria-live="polite">
+      <div class="welcome">
+        <h2>你好，我是小白。</h2>
+        <p>用一句话说说哪里不舒服，或者直接点下面的例子。我会先判断要不要紧，再告诉你现在能做什么、什么时候必须去医院。</p>
+        <div class="examples">
+          <button type="button" data-q="胸口像被压着，一直出汗，左胳膊也疼">胸口发闷、出冷汗</button>
+          <button type="button" data-q="孩子发烧38.5度，怎么处理">孩子发烧 38.5℃</button>
+          <button type="button" data-q="最近总失眠，白天没精神怎么办">最近总失眠</button>
+          <button type="button" data-q="被蜱虫咬了要紧吗">知识库没覆盖的问题</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="composer">
+      <textarea id="input" rows="1" placeholder="说说你的情况，比如：嗓子疼两天了" aria-label="输入你的问题"></textarea>
+      <button class="send" id="send" type="button" aria-label="发送">↑</button>
+    </div>
+    <div class="disclaimer">我不是医生，这些建议不能替代面诊。急症请直接拨打 120。</div>
+  </main>
+</div>
+
+<script>
+(function(){
+  const messages = document.getElementById('messages');
+  const input = document.getElementById('input');
+  const sendBtn = document.getElementById('send');
+  let busy = false;
+
+  const speakerSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+
+  function scrollBottom(){
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function addUser(text){
+    const welcome = messages.querySelector('.welcome');
+    if (welcome) welcome.remove();
+    const row = document.createElement('div');
+    row.className = 'row user';
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble user-bubble';
+    bubble.textContent = text;
+    row.appendChild(bubble);
+    messages.appendChild(row);
+    scrollBottom();
+  }
+
+  function addTyping(){
+    const row = document.createElement('div');
+    row.className = 'row bot';
+    row.id = 'typing';
+    const av = document.createElement('div');
+    av.className = 'avatar-sm';
+    av.textContent = '小';
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble bot-bubble typing';
+    bubble.innerHTML = '<span></span><span></span><span></span>';
+    row.append(av, bubble);
+    messages.appendChild(row);
+    scrollBottom();
+  }
+
+  function removeTyping(){
+    const t = document.getElementById('typing');
+    if (t) t.remove();
+  }
+
+  function addBot(data){
+    const row = document.createElement('div');
+    row.className = 'row bot';
+
+    const av = document.createElement('div');
+    av.className = 'avatar-sm';
+    av.textContent = '小';
+
+    const wrap = document.createElement('div');
+    wrap.className = 'bot-wrap';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble bot-bubble' + (data.need_emergency ? ' emergency' : '');
+
+    if (data.need_emergency) {
+      const tag = document.createElement('div');
+      tag.className = 'emg-tag';
+      tag.textContent = '需要立即处理';
+      bubble.appendChild(tag);
+    }
+
+    (data.reply_text || '').split('\n').forEach(function(line){
+      if (!line.trim()) return;
+      if (line.indexOf('· ') === 0) {
+        const b = document.createElement('div');
+        b.className = 'bullet';
+        b.textContent = line.slice(2);
+        bubble.appendChild(b);
+      } else {
+        const p = document.createElement('p');
+        if (line.length <= 20 && /[：:]$/.test(line)) p.className = 'label';
+        p.textContent = line;
+        bubble.appendChild(p);
+      }
+    });
+
+    if (data.need_emergency && data.meta && data.meta.emergency_number) {
+      const a = document.createElement('a');
+      a.className = 'call';
+      a.href = 'tel:' + data.meta.emergency_number;
+      a.textContent = '拨打 ' + data.meta.emergency_number;
+      bubble.appendChild(a);
+    }
+
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    const risk = document.createElement('span');
+    const lvl = data.risk_level || '中';
+    risk.className = 'risk ' + (lvl === '高' ? 'high' : lvl === '中' ? 'mid' : 'low');
+    risk.textContent = '风险 ' + lvl;
+    meta.appendChild(risk);
+
+    const evText = (data.meta && data.meta.evidence && data.meta.evidence.length)
+      ? '依据：' + data.meta.evidence.slice(0, 2).join(' / ')
+      : (data.meta && data.meta.kb_hit === false ? '依据：知识库未覆盖' : '');
+    if (evText) {
+      const ev = document.createElement('span');
+      ev.className = 'ev';
+      ev.textContent = evText;
+      meta.appendChild(ev);
+    }
+    bubble.appendChild(meta);
+    wrap.appendChild(bubble);
+
+    if (data.followups && data.followups.length) {
+      const f = document.createElement('div');
+      f.className = 'followups';
+      data.followups.forEach(function(q){
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'chip';
+        b.textContent = q;
+        b.addEventListener('click', function(){ if (!busy) send(q); });
+        f.appendChild(b);
+      });
+      wrap.appendChild(f);
+    }
+
+    const tools = document.createElement('div');
+    tools.className = 'tools';
+    const v = document.createElement('button');
+    v.type = 'button';
+    v.className = 'tool';
+    v.title = '朗读这条回复';
+    v.setAttribute('aria-label', '朗读');
+    v.innerHTML = speakerSvg;
+    v.addEventListener('click', function(){ speak(data.voice_text, v); });
+    tools.appendChild(v);
+    wrap.appendChild(tools);
+
+    row.append(av, wrap);
+    messages.appendChild(row);
+    scrollBottom();
+  }
+
+  function speak(text, btn){
+    if (!text) return;
+    if (!('speechSynthesis' in window)) {
+      alert('当前浏览器不支持语音朗读，换 Edge 或 Chrome 试试。');
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text.replace(/\s+/g, ' '));
+    u.lang = 'zh-CN';
+    u.rate = 1.02;
+    const voices = window.speechSynthesis.getVoices();
+    const zh = voices.find(function(x){ return /zh|Chinese|Xiaoxiao|Yunxi/i.test((x.lang || '') + ' ' + (x.name || '')); });
+    if (zh) u.voice = zh;
+    u.onstart = function(){ btn.classList.add('speaking'); };
+    u.onend = function(){ btn.classList.remove('speaking'); };
+    u.onerror = function(){ btn.classList.remove('speaking'); };
+    window.speechSynthesis.speak(u);
+  }
+
+  function setBusy(v){
+    busy = v;
+    sendBtn.disabled = v;
+  }
+
+  async function send(text){
+    if (busy) return;
+    const msg = (text || input.value).trim();
+    if (!msg) return;
+    input.value = '';
+    autoGrow();
+    addUser(msg);
+    setBusy(true);
+    addTyping();
+    try {
+      const resp = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg })
+      });
+      const data = await resp.json();
+      removeTyping();
+      if (!data || data.ok !== true) throw new Error('bad response');
+      addBot(data);
+    } catch (e) {
+      removeTyping();
+      addBot({
+        reply_text: '连接断了一下。你看看启动小白的那个窗口是不是还开着，关掉再双击一次「启动小白.bat」就好。\n我不是医生，这些建议不能替代面诊。',
+        voice_text: '连接断了一下 我不是医生 这些建议不能替代面诊',
+        followups: [],
+        risk_level: '中',
+        need_emergency: false,
+        meta: { kb_hit: false, evidence: [] }
+      });
+    } finally {
+      setBusy(false);
+      input.focus();
+    }
+  }
+
+  function autoGrow(){
+    input.style.height = 'auto';
+    const h = Math.min(input.scrollHeight, 120);
+    input.style.height = h + 'px';
+    input.style.overflowY = input.scrollHeight > 120 ? 'auto' : 'hidden';
+  }
+
+  input.addEventListener('input', autoGrow);
+  input.addEventListener('keydown', function(e){
+    if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+      e.preventDefault();
+      send();
+    }
+  });
+  sendBtn.addEventListener('click', function(){ send(); });
+
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest('[data-q]');
+    if (btn && !busy) send(btn.getAttribute('data-q'));
+  });
+
+  document.getElementById('reset').addEventListener('click', function(){
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    location.reload();
+  });
+
+  autoGrow();
+  input.focus();
+
+  // 支持用 ?demo=问题 直接发起一次对话，方便演示和截图
+  const demo = new URLSearchParams(location.search).get('demo');
+  if (demo) setTimeout(function(){ send(demo); }, 200);
+})();
+</script>
+</body>
+</html>

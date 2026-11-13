@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: xiaobai-health
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -u app.py
+    healthCheckPath: /api/health
+    envVars:
+      - key: XIAOBAI_HOST
+        value: 0.0.0.0
+      - key: PYTHON_VERSION
+        value: 3.12.6
