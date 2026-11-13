@@ -139,54 +139,59 @@ class Handler(BaseHTTPRequestHandler):
         if len(text) > 500:
             text = text[:500]
 
-        key = self._client_key()
-        t0 = time.time()
-        try:
-            reply = context_reply(text, key)
-            if reply is None:
-                trace = run(text)
-                out = trace["output"]
-                m1 = trace["output"]["trace"].get("node_2_m1") or {}
-                with LAST_LOCK:
-                    LAST[key] = {"m1": m1, "risk": out["risk_level"]}
-                    if len(LAST) > 2000:
-                        LAST.clear()
-                inner = trace["output"]["trace"]
-                flag = (inner.get("node_8_fallback") or {}).get("flag")
-                m2 = inner.get("node_6_m2") or {}
-                if out.get("need_emergency"):
-                    evidence = ["安全兜底 · " + flag] if flag else ["安全兜底"]
-                else:
-                    evidence = m2.get("evidence") if m2.get("kb_hit") else []
-                body = {
-                    "reply_text": out["reply_text"],
-                    "voice_text": out["voice_text"],
-                    "followups": out["followups"],
-                    "risk_level": out["risk_level"],
-                    "need_emergency": bool(out.get("need_emergency")),
-                    "meta": {
-                        "route": "安全兜底" if out.get("need_emergency") else (inner.get("node_5_task_route") or "直答"),
-                        "flag": flag,
-                        "emergency_number": emergency_number(flag) if out.get("need_emergency") else "",
-                        "kb_hit": bool(m2.get("kb_hit")) or bool(flag),
-                        "evidence": evidence or [],
-                        "latency_ms": round((time.time() - t0) * 1000, 1),
-                    },
-                }
+        body = answer(text, self._client_key())
+        self._send(200, json.dumps(body, ensure_ascii=False))
+
+
+def answer(text, key=None):
+    """一次完整的对话：多轮承接优先，其余走九节点主链路。"""
+    t0 = time.time()
+    try:
+        reply = context_reply(text, key)
+        if reply is None:
+            trace = run(text)
+            out = trace["output"]
+            m1 = trace["output"]["trace"].get("node_2_m1") or {}
+            with LAST_LOCK:
+                LAST[key] = {"m1": m1, "risk": out["risk_level"]}
+                if len(LAST) > 2000:
+                    LAST.clear()
+            inner = trace["output"]["trace"]
+            flag = (inner.get("node_8_fallback") or {}).get("flag")
+            m2 = inner.get("node_6_m2") or {}
+            if out.get("need_emergency"):
+                evidence = ["安全兜底 · " + flag] if flag else ["安全兜底"]
             else:
-                body = reply
-            body["ok"] = True
-            self._send(200, json.dumps(body, ensure_ascii=False))
-        except Exception as exc:
-            self._send(200, json.dumps({
-                "ok": True,
-                "reply_text": "我这边刚刚卡了一下，你再说一遍好吗？\n" + DISCLAIMER,
-                "voice_text": "我这边刚刚卡了一下 你再说一遍好吗 我不是医生 这些建议不能替代面诊",
-                "followups": ["我再试一次", "换个说法说"],
-                "risk_level": "中",
-                "need_emergency": False,
-                "meta": {"route": "异常兜底", "kb_hit": False, "evidence": [], "error": str(exc)[:80]},
-            }, ensure_ascii=False))
+                evidence = m2.get("evidence") if m2.get("kb_hit") else []
+            body = {
+                "reply_text": out["reply_text"],
+                "voice_text": out["voice_text"],
+                "followups": out["followups"],
+                "risk_level": out["risk_level"],
+                "need_emergency": bool(out.get("need_emergency")),
+                "meta": {
+                    "route": "安全兜底" if out.get("need_emergency") else (inner.get("node_5_task_route") or "直答"),
+                    "flag": flag,
+                    "emergency_number": emergency_number(flag) if out.get("need_emergency") else "",
+                    "kb_hit": bool(m2.get("kb_hit")) or bool(flag),
+                    "evidence": evidence or [],
+                    "latency_ms": round((time.time() - t0) * 1000, 1),
+                },
+            }
+        else:
+            body = reply
+        body["ok"] = True
+        return body
+    except Exception as exc:
+        return {
+            "ok": True,
+            "reply_text": "我这边刚刚卡了一下，你再说一遍好吗？\n" + DISCLAIMER,
+            "voice_text": "我这边刚刚卡了一下 你再说一遍好吗 我不是医生 这些建议不能替代面诊",
+            "followups": ["我再试一次", "换个说法说"],
+            "risk_level": "中",
+            "need_emergency": False,
+            "meta": {"route": "异常兜底", "kb_hit": False, "evidence": [], "error": str(exc)[:80]},
+        }
 
 
 def context_reply(text, key=None):
